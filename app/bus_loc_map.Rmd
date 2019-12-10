@@ -62,8 +62,8 @@ Column {data-width=400}
 ```{r}
 # render empty map
 output$map <- renderLeaflet({
-  leaflet() %>% 
-    addTiles() %>% 
+  leaflet(options = leafletOptions(preferCanvas = TRUE)) %>% 
+    addProviderTiles(providers$Hydda) %>% 
     setView(lng = 174.762224, lat = -36.846841, zoom = 12)
 })
 
@@ -77,11 +77,17 @@ observe({
     mutate(
       popup = sprintf("<strong>Line %s</strong> <em>(%s)</em><p>%s</p>", route_short_name, agency_id, route_long_name)
     )
+  
+  discrete_pal <- colorFactor(terrain.colors(n_distinct(d$agency_id)), d$agency_id)
 
   # update the map
   leafletProxy("map", data = d) %>% 
     clearMarkers() %>% 
-    addMarkers(lng = ~longitude, lat = ~latitude, popup = ~popup)
+    addCircleMarkers(
+      lng = ~longitude, lat = ~latitude, popup = ~popup, fillColor = ~discrete_pal(agency_id), 
+      radius = 5, fillOpacity = 1, opacity = 1, color = "#000000", weight = 1
+    )
+    # addMarkers(lng = ~longitude, lat = ~latitude, popup = ~popup)
 })
 
 leafletOutput("map")
